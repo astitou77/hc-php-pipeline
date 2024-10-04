@@ -1,0 +1,75 @@
+# This should only be used for older projects
+FROM php:7.3-apache
+
+WORKDIR /var/www
+
+LABEL title 'PHP7.3-base for older projects'
+LABEL author 'Web/Mobile Team (imsd.web-dsgi@hc-sc.gc.ca)'
+LABEL source 'https://github.hc-sc.gc.ca/hs/php-base-docker'
+
+# default values for PROD
+ENV IN_DOCKER=1 \
+    USING_PHP_BASE=1 \
+    PHP_OPCACHE_VALIDATE_TIMESTAMPS="0" \
+    PHP_OPCACHE_MAX_ACCELERATED_FILES="10000" \
+    PHP_OPCACHE_MEMORY_CONSUMPTION="192" \
+    PHP_OPCACHE_MAX_WASTED_PERCENTAGE="10" \
+    PHP_MEMORY_LIMIT="512M" \
+    PHP_UPLOAD_SIZE="10M" \
+    PHP_POST_MAX_SIZE="10M" \
+    PHP_MAX_EXECUTION_TIME=30 \
+    TZ="America/Toronto"
+
+# update the OS and install common modules
+RUN apt-get update -y && apt-get upgrade -y \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libmcrypt-dev \
+    libpng-dev \
+    libwebp-dev \
+    curl \
+    libcurl4 \
+    libcurl4-openssl-dev \
+    zlib1g-dev \
+    libicu-dev \
+    libmemcached-dev \
+    memcached \
+    default-mysql-client \
+    libsqlite3-dev \
+    openssl \
+    libssl-dev \
+    libmagickwand-dev \
+    unzip \
+    libzip-dev \
+    zip \
+    git \
+    cron \
+    nano
+
+RUN set -eux; \
+    docker-php-ext-configure intl; \
+    docker-php-ext-configure mysqli --with-mysqli=mysqlnd; \
+    docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd; \
+    docker-php-ext-configure zip; \
+    docker-php-ext-install -j "$(nproc)" \
+        zip \
+        intl \
+        mysqli\
+        opcache\
+        gettext \
+        pdo_mysql\
+        pdo_sqlite
+
+RUN a2enmod rewrite
+
+# install composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# set the php.ini
+COPY php.ini /usr/local/etc/php/conf.d/php.ini
+
+# Clean up the image
+RUN rm -rf /var/lib/apt/lists/*
+
+COPY --chmod=774 go-php.sh /go-php.sh
+ENTRYPOINT ["/go-php.sh"]

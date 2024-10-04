@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+
+# Name of your app and name of the container (usually the same as the app name)
+APPNAME=php-base
+CONTAINER_NAME=$APPNAME
+
+# the image name on artifactory (or ACR) and local
+REMOTE_IMAGE="jack.hc-sc.gc.ca/php/php-base"
+LOCAL_IMAGE="php-base"
+
+# the tag you want to use, latest or latest-mongodb are good choice
+APPTAG="latest"
+
+# the folder where your code is located, in an app this might be $APPNAME and where to mount it
+VOLUME=$PWD/code
+VOLUME_MOUNT=/var/www/html
+
+# the environment variables file
+ENV_FILE="$PWD/environment/.env"
+
+# if not using traefik, this is the port to publish
+PORT='-p 80:80'
+
+# Name of the network, it will be created if it does not exists
+NETWORK=appnet
+
+# Options when using Traefik
+DOMAIN=localdev.hc-sc.gc.ca
+TRAEFIK_RULE='HostRegexp(`'$DOMAIN'`)'
+TRAEFIK_TLS_MAIN_DOMAIN=$DOMAIN
+TRAEFIK_TLS_SANS_DOMAIN=$DOMAIN,*.hc-sc.gc.ca
+ADD_HOST=''
+# We don't use traefik by default, if a running container named traefik is found we will use it
+USE_TRAEFIK=false
+
+# check if https://jack.hc-sc.gc.ca can be reached. If it can, pull the remote image
+# -q : Silence mode
+# --spider : don't get, just check page availability
+wget -q --spider https://jack.hc-sc.gc.ca
+if [ $? -eq 0 ]; then
+    echo "Online, pulling from jack.hc-sc.gc.ca"
+    docker pull $REMOTE_IMAGE:$APPTAG
+    IMAGE=$REMOTE_IMAGE
+else
+    echo "Offline, using local image"
+    IMAGE=$LOCAL_IMAGE
+fi
+
+
+print_usage() {
+    echo "Usage: ./start [options]"
+    echo " "
+    echo "    -h|--help     Show this message"
+    echo "    -l|--local    Use local image instead of jack's image"
+    echo "    -t|--tag      Specify a docker tag for drupal-wxt [latest]"
+    echo "    -x|--prefix   Specify the prefix for the container"
+    echo "    -e|--env-file The file with the environment variable [environment/.env]"
+    echo " "
+    exit;
+}
+
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+        print_usage
+        exit 0
+        ;;
+    -t|--tag)
+        shift
+        APPTAG=$1
+        shift
+        ;;
+    -x|--prefix)
+        shift
+        CONTAINER_NAME="${1}-${CONTAINER_NAME}"
+        shift
+        ;;
+    -e|--env-file)
+        shift
+        ENV_FILE=$1
+        shift
+        ;;
+    -l|--local)
+        shift
+        IMAGE=$LOCAL_IMAGE
+        ;;
+    *)
+        break
+        ;;
+  esac
+done
+
+# if the network does not exists, create it...
+if [ ! "$(docker network ls -qf name=${NETWORK})" ]; then
+  echo "Creating network ${NETWORK}..."
+  docker network create ${NETWORK}
+fi
+
+# stop and delete the existing container
+if [ "$(docker ps -qf name=${CONTAINER_NAME})" ]; then
+  echo "Stoping and deleting existing container ${CONTAINER_NAME}..."
+  docker stop ${CONTAINER_NAME}
+  docker rm ${CONTAINER_NAME}
+elif [ "$(docker ps -qaf name=${CONTAINER_NAME})" ]; then
+  echo "Deleting container ${CONTAINER_NAME}..."
+  docker rm ${CONTAINER_NAME}
+fi
+
+# If we are traefik, don't publish port 80
+if [ "${USE_TRAEFIK}" ]; then
+    PORT=''
+fi
+
+# if developing Laminas (folder /docker/php-base-laminas exists), use the latest module files
+LAMINAS_DEVEL=""
+if [ -d "/docker/php-base-laminas/code/module" ]; then
+    echo "/docker/php-base-laminas found, mounting volume for latest modules"
+    LAMINAS_DEVEL="-v /docker/php-base-laminas/code/module:/var/www/module -v /docker/php-base-laminas/code/config:/var/www/config"
+fi
+
+if [ -d "$VOLUME" ]; then
+    MOUNT_VOLUME="-v $VOLUME:$VOLUME_MOUNT"
+fi
+
+# switch to using traefik automatically if a traefik container is running
+if [ "$(docker ps -qf name=traefik)" ]; then
+    USE_TRAEFIK=true
+    PORT=''
+    # get the IP for traefik
+    TRAEFIK_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' traefik)
+    ADD_HOST="--add-host ${DOMAIN}:${TRAEFIK_IP}"
+fi
+
+ENV_FILE_STRING=""
+if [ -f "${ENV_FILE}" ]; then
+    ENV_FILE_STRING="--env-file $ENV_FILE"
+fi
+
+
+echo "Starting ${CONTAINER_NAME}..."
+docker run -d --name ${CONTAINER_NAME} --net $NETWORK $PORT \
+    --restart unless-stopped \
+    --label traefik.enable=$USE_TRAEFIK \
+    --label traefik.http.routers.${APPNAME}.rule=$TRAEFIK_RULE \
+    --label traefik.http.routers.${APPNAME}.entrypoints=websecure \
+    --label traefik.http.routers.${APPNAME}.tls=true \
+    --label traefik.http.routers.${APPNAME}.tls.domains[0].main=$TRAEFIK_TLS_MAIN_DOMAIN \
+    --label traefik.http.routers.${APPNAME}.tls.domains[0].sans=$TRAEFIK_TLS_SANS_DOMAIN \
+    --label traefik.http.routers.${APPNAME}_http.rule=$TRAEFIK_RULE \
+    --label traefik.http.routers.${APPNAME}_http.entrypoints=web \
+    $ENV_FILE_STRING \
+    $MOUNT_VOLUME \
+    $LAMINAS_DEVEL \
+    ${IMAGE}:${APPTAG}
