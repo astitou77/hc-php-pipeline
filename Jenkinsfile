@@ -4,10 +4,12 @@
  */
 
 pipeline {
-    agent {
+    agent any
+
+	// {
 	//   podman run -d --rm --name=DockerV1 -p 4444:22 -e "JENKINS_AGENT_SSH_PUBKEY=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKLnmO6MeYpS0HWVi66fjh4ZDV3BHVxdjzWOWaI9539T" docker.io/jenkins/ssh-agent:alpine-jdk17  ...
-        label 'DockerV1'
-    }
+        // label 'DockerV1'
+       // }
 
     options {
         // This is required if you want to clean before build
