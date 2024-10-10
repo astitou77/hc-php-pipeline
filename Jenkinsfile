@@ -101,7 +101,6 @@ pipeline {
                     """
                 }
                 script {
-		    // To replace 'artifactoryDocker.push'
 		    def podmanPush(image, repo){
 			sh "podman push ${image} ${repo}"
 		    }
