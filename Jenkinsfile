@@ -61,10 +61,6 @@ pipeline {
 
 
         stage('Image') {
-            when {
-                // our SSC github repo calls main branch  'main' ; not 'master'
-                branch 'master'
-            }
             steps {
                 withCredentials([
                     usernamePassword(credentialsId:'ARTIFACTORY_PUBLISH', usernameVariable: 'USR', passwordVariable: 'PWD')
