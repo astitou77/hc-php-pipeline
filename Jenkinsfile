@@ -38,16 +38,21 @@ pipeline {
                 script {
                     //Get basic meta-data ; BUILD_ID is a Jenkins default var ex.: "20241011_200401" (datetime)
                     buildId = env.BUILD_ID
+		    echo "BEFOR currentVersion...."
                     currentVersion="b" + (buildId ? buildId : "MANUAL-BUILD")
                     version81="8.1b" + (buildId ? buildId : "MANUAL-BUILD")
                     version82="8.2b" + (buildId ? buildId : "MANUAL-BUILD")
                     version83="8.3b" + (buildId ? buildId : "MANUAL-BUILD")
+		    
+		    echo "AFTER BUILD_ID versions...."
 
                     //Setup Artifactory connection
                     artifactoryServer = Artifactory.server 'default'
-                    artifactoryGradle = Artifactory.newGradleBuild()
+                    echo "AFTER Artifactory.server 'default'..... "
+		    artifactoryGradle = Artifactory.newGradleBuild()
                     artifactoryDocker = Artifactory.docker server: artifactoryServer
                     buildInfo = Artifactory.newBuildInfo()
+		    echo "AFTER Artifactory.newBuildInfo()...."
                 }
             }
         }
