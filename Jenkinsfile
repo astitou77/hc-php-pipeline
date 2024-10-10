@@ -103,25 +103,16 @@ pipeline {
                 script {
                 
 			echo "Hello"
+			def buildInfoTemp
+                        echo "AAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                        podman push ${containerRegistry}/php/php-base:8.3${currentVersion}-mongodb
+                        echo "BBBBBBBBBBBBBBBBBBBBBBBBBBB"
+                        buildInfo.append buildInfoTemp
+
 		}
             }
         }
-
-
-	stage('Push Image'){
-
-	       steps{
-		echo "STEPS !!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		script{
-			def buildInfoTemp
-			echo "AAAAAAAAAAAAAAAAAAAAAAAAAAA"
-			podman push ${containerRegistry}/php/php-base:8.3${currentVersion}-mongodb
-			echo "BBBBBBBBBBBBBBBBBBBBBBBBBBB"
-			buildInfo.append buildInfoTemp
-		}
-	       }
-
-	}
+	
 
 
 
