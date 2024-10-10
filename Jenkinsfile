@@ -141,9 +141,68 @@ pipeline {
 	
 
 
-
-
     }
+
+
+
+    
+    post {
+        always {
+            cleanWs(cleanWhenNotBuilt: true,
+                deleteDirs: true,
+                disableDeferredWipeout: true,
+                notFailBuild: true,
+                patterns: [
+                    [pattern: '.gitignore', type: 'INCLUDE']
+                ]
+            )
+/*
+            sh """
+                podman rmi php-base:7.1${currentVersion}
+                podman rmi php-base:7.1
+
+                podman rmi php-base:8.1${currentVersion}
+                podman rmi php-base:8.1
+                podman rmi php-base:8.2${currentVersion}
+                podman rmi php-base:8.2
+
+                podman rmi php-base:8.2${currentVersion}-mongodb
+                podman rmi php-base:8.2-mongodb
+
+                podman rmi php-base:8.3${currentVersion}
+                podman rmi php-base:8.3
+                podman rmi php-base:latest
+
+                podman rmi php-base:8.3${currentVersion}-mongodb
+                podman rmi php-base:8.3-mongodb
+                podman rmi php-base:latest-mongodb
+
+                podman image ls
+            """
+*/
+            script {
+                resultString = "None"
+            }
+        }
+        success {
+            script {
+                resultString = "Success 🌞"
+            }
+        }
+        unstable {
+            script {
+                resultString = "Unstable ⛅"
+            }
+        }
+        failure {
+            script {
+                resultString = "Failure 🌩"
+            }
+        }
+
+   }
+
+
 
 
 }
