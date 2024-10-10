@@ -108,6 +108,23 @@ pipeline {
         }
 
 
+	stage('Push Image'){
+
+	       steps{
+		echo "STEPS !!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+		script{
+			def podmanPush(image){ sh "podman push ${image}"}
+			def buildInfoTemp
+			echo "AAAAAAAAAAAAAAAAAAAAAAAAAAA"
+			buildInfoTemp = podmanPush("${containerRegistry}/php/php-base:8.3${currentVersion}-mongodb")
+			echo "BBBBBBBBBBBBBBBBBBBBBBBBBBB"
+			buildInfo.append buildInfoTemp
+		}
+	       }
+
+	}
+
+
 
 
     }
