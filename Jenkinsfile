@@ -101,41 +101,40 @@ pipeline {
                     """
                 }
                 script { 
-			buildInfo = buildInfo ?: artifactory.newBuildInfo()
 			def buildInfoTemp
                         buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:7.1${currentVersion}"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:7.1"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.1"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.1${currentVersion}"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.2"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.2${currentVersion}"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.2-mongodb"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.2${currentVersion}-mongodb"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.3"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.3${currentVersion}"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.3-mongodb"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.3${currentVersion}-mongodb"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:latest-mongodb"
-                        buildInfo.append buildInfoTemp
+                        // buildInfo.append buildInfoTemp
 			def buildInfoTempLatest
 			buildInfoTempLatest = sh "podman push ${containerRegistry}/php/php-base:latest"
-			buildInfo.append buildInfoTempLatest
+			// buildInfo.append buildInfoTempLatest
 		}
             }
         }
