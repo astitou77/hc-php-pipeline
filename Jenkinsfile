@@ -53,6 +53,7 @@ pipeline {
                     artifactoryDocker = Artifactory.docker server: artifactoryServer
                     buildInfo = Artifactory.newBuildInfo()
 		    echo "AFTER Artifactory.newBuildInfo()...."
+		    echo "Build Info: ${buildInfo}"
                 }
             }
         }
