@@ -100,10 +100,11 @@ pipeline {
                         podman tag php-base:latest-mongodb ${containerRegistry}/php/php-base:latest-mongodb
                     """
                 }
-                script { 
+                script {
+			buildInfo = Artifactory.newBuildInfo() 
 			def buildInfoTemp
                         buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:7.1${currentVersion}"
-                        // buildInfo.append buildInfoTemp
+                        buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:7.1"
                         // buildInfo.append buildInfoTemp
 
