@@ -48,7 +48,7 @@ pipeline {
                     version82="8.2b" + (buildId ? buildId : "MANUAL-BUILD")
                     version83="8.3b" + (buildId ? buildId : "MANUAL-BUILD")
 
-                    Setup Artifactory connection
+                    //Setup Artifactory connection
                     artifactoryServer = Artifactory.server 'default'
                     artifactoryGradle = Artifactory.newGradleBuild()
                     artifactoryDocker = Artifactory.docker server: artifactoryServer
