@@ -50,7 +50,7 @@ pipeline {
                     artifactoryServer = Artifactory.server 'default'
                     echo "AFTER Artifactory.server 'default'..... "
 		    artifactoryGradle = Artifactory.newGradleBuild()
-                    artifactoryDocker = Artifactory.docker server: artifactoryServer
+                    // artifactoryDocker = Artifactory.docker server: artifactoryServer
                     buildInfo = Artifactory.newBuildInfo()
 		    echo "AFTER Artifactory.newBuildInfo()...."
 		    echo "Build Info: ${buildInfo}"
@@ -101,6 +101,7 @@ pipeline {
                     """
                 }
                 script { 
+			buildInfo = buildInfo ?: artifactory.newBuildInfo()
 			def buildInfoTemp
                         buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:7.1${currentVersion}"
                         buildInfo.append buildInfoTemp
