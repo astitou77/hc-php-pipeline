@@ -104,7 +104,7 @@ pipeline {
 			def buildInfoTemp
                         buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:7.1${currentVersion}"
                         buildInfo.append buildInfoTemp
-			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:7.1$"
+			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:7.1"
                         buildInfo.append buildInfoTemp
 
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.1"
