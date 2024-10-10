@@ -101,6 +101,20 @@ pipeline {
                     """
                 }
                 script {
+		    // To replace 'artifactoryDocker.push'
+		    def podmanPush(image, repo){
+			sh "podman push ${image} ${repo}"
+		    }
+		    
+		    echo "BEFORE...............${containerRegistry}/php/php-base:7.1${currentVersion} " 
+		    def buildInfoTemp
+		    buildInfoTemp = podmanPush("${containerRegistry}/php/php-base:7.1${currentVersion}", 'docker-local')
+		    echo "AFTERRRR..........4"
+		    buildInfo.append buildInfoTemp
+		    buildInfoTemp = podmanPush("${containerRegistry}/php/php-base:7.1", 'docker-local')
+			
+		    echo "AFTERRR........3"
+/*
                     def buildInfoTemp
                     buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:7.1${currentVersion}", 'docker-local'
                     buildInfo.append buildInfoTemp
@@ -135,6 +149,7 @@ pipeline {
                     def buildInfoTempLatest
                     buildInfoTempLatest = artifactoryDocker.push "${containerRegistry}/php/php-base:latest", 'docker-local'
                     buildInfo.append buildInfoTempLatest
+*/
                 }
             }
         }
