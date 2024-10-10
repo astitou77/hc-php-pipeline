@@ -125,7 +125,7 @@ pipeline {
                         buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.3${currentVersion}"
                         buildInfo.append buildInfoTemp
-			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.3$-mongodb"
+			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.3-mongodb"
                         buildInfo.append buildInfoTemp
 			buildInfoTemp = sh "podman push ${containerRegistry}/php/php-base:8.3${currentVersion}-mongodb"
                         buildInfo.append buildInfoTemp
