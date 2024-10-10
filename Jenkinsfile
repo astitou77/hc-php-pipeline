@@ -59,6 +59,93 @@ pipeline {
         }
 
 
+
+        stage('Image') {
+            when {
+                // our SSC github repo calls main branch  'main' ; not 'master'
+                branch 'main'
+            }
+            steps {
+                withCredentials([
+                    usernamePassword(credentialsId:'ARTIFACTORY_PUBLISH', usernameVariable: 'USR', passwordVariable: 'PWD')
+                ]) {
+                    sh """
+                        podman login -u ${USR} -p ${PWD} ${
+                            containerRegistry
+                        }
+                        podman pull php:7.1-apache
+                        podman build -t php-base:7.1${currentVersion} -t php-base:7.1 -f dockerfile71 .
+                        podman tag php-base:7.1${currentVersion} ${containerRegistry}/php/php-base:7.1${currentVersion}
+                        podman tag php-base:7.1 ${containerRegistry}/php/php-base:7.1
+
+                        podman pull php:8.1-apache
+                        podman build -t php-base:8.1${currentVersion} -t php-base:8.1 -f dockerfile81 .
+                        podman tag php-base:8.1${currentVersion} ${containerRegistry}/php/php-base:8.1${currentVersion}
+                        podman tag php-base:8.1 ${containerRegistry}/php/php-base:8.1
+
+                        podman pull php:8.2-apache
+                        podman build -t php-base:8.2${currentVersion} -t php-base:8.2 -f dockerfile82 .
+                        podman tag php-base:8.2${currentVersion} ${containerRegistry}/php/php-base:8.2${currentVersion}
+                        podman tag php-base:8.2 ${containerRegistry}/php/php-base:8.2
+
+                        podman build -t php-base:8.2${currentVersion}-mongodb -t php-base:8.2-mongodb -f dockerfile82 --target mongodb .
+                        podman tag php-base:8.2${currentVersion}-mongodb ${containerRegistry}/php/php-base:8.2${currentVersion}-mongodb
+                        podman tag php-base:8.2-mongodb ${containerRegistry}/php/php-base:8.2-mongodb
+
+                        podman pull php:8.3-apache
+                        podman build -t php-base:8.3${currentVersion} -t php-base:8.3 -t php-base:latest -f dockerfile83 --target base .
+                        podman tag php-base:8.3${currentVersion} ${containerRegistry}/php/php-base:8.3${currentVersion}
+                        podman tag php-base:8.3 ${containerRegistry}/php/php-base:8.3
+                        podman tag php-base:latest ${containerRegistry}/php/php-base:latest
+
+                        podman build -t php-base:8.3${currentVersion}-mongodb -t php-base:8.3-mongodb -t php-base:latest-mongodb -f dockerfile83 --target mongodb .
+                        podman tag php-base:8.3${currentVersion}-mongodb ${containerRegistry}/php/php-base:8.3${currentVersion}-mongodb
+                        podman tag php-base:8.3-mongodb ${containerRegistry}/php/php-base:8.3-mongodb
+                        podman tag php-base:latest-mongodb ${containerRegistry}/php/php-base:latest-mongodb
+                    """
+                }
+                script {
+                    def buildInfoTemp
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:7.1${currentVersion}", 'docker-local'
+                    buildInfo.append buildInfoTemp
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:7.1", 'docker-local'
+                    buildInfo.append buildInfoTemp
+
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.1", 'docker-local'
+                    buildInfo.append buildInfoTemp
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.1${currentVersion}", 'docker-local'
+                    buildInfo.append buildInfoTemp
+
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.2", 'docker-local'
+                    buildInfo.append buildInfoTemp
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.2${currentVersion}", 'docker-local'
+                    buildInfo.append buildInfoTemp
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.2-mongodb", 'docker-local'
+                    buildInfo.append buildInfoTemp
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.2${currentVersion}-mongodb", 'docker-local'
+                    buildInfo.append buildInfoTemp
+
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.3", 'docker-local'
+                    buildInfo.append buildInfoTemp
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.3${currentVersion}", 'docker-local'
+                    buildInfo.append buildInfoTemp
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.3-mongodb", 'docker-local'
+                    buildInfo.append buildInfoTemp
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:8.3${currentVersion}-mongodb", 'docker-local'
+                    buildInfo.append buildInfoTemp
+
+                    buildInfoTemp = artifactoryDocker.push "${containerRegistry}/php/php-base:latest-mongodb", 'docker-local'
+                    buildInfo.append buildInfoTemp
+                    def buildInfoTempLatest
+                    buildInfoTempLatest = artifactoryDocker.push "${containerRegistry}/php/php-base:latest", 'docker-local'
+                    buildInfo.append buildInfoTempLatest
+                }
+            }
+        }
+
+
+
+
     }
 
 
